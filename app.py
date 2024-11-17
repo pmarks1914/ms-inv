@@ -7,7 +7,7 @@ import requests, json
 from Helper.helper import generate_random_code
 from fileManager.fileManager import fileUploadManager
 #import geocoder
-from Model import Usage, User, Code, db, Fileupload, get_location
+from Model import Inv_Usage, Inv_User, Inv_Code, db, Inv_Fileupload, get_location
 from Notification.Email.sendEmail import send_notification_email
 # from sendEmail import Email 
 from Settings import *
@@ -85,7 +85,7 @@ def get_device_info(request, type, user_id):
         "ip": ip,
         "ip_data": ip_data
     }
-    Usage.create_usage(device_info, type, user_id)
+    Inv_Usage.create_usage(device_info, type, user_id)
     
 @app.route('/test', methods=['GET'])
 # @token_required
@@ -94,7 +94,7 @@ def testd():
         # Extract query parameters
         page = request.args.get('page', default=1, type=int)
         per_page = request.args.get('per_page', default=10, type=int)
-        user = User.getAllUsers(page, per_page)
+        user = Inv_User.getAllUsers(page, per_page)
 
         msg = {
             "code": 200,
@@ -118,7 +118,7 @@ def token_status():
         }
     try:
         user_id = return_user_id(request)
-        user = User.getUserById(user_id)
+        user = Inv_User.getUserById(user_id)
         msg = {
             "code": 200,
             "status": True,
@@ -148,25 +148,24 @@ def callbackfs():
 
 @app.route('/login', methods=['POST'])
 def get_student_login():
-    student_id = None
     count_stats = None
     file_photo = None
     request_data = request.get_json()
     get_device_info(request, "LOGIN", user_id=None)
     password_hashed = hashlib.sha256((request_data.get('password')).encode()).hexdigest()
     try:
-        match = User.username_password_match(request_data.get('email'), password_hashed)
+        match = Inv_User.username_password_match(request_data.get('email'), password_hashed)
         if match != None and match != False:
             expiration_date = datetime.datetime.utcnow() + datetime.timedelta(hours=6)
             token = jwt.encode({'exp': expiration_date, 'id': match['id']}, app.config['SECRET_KEY'], algorithm='HS256')
             get_device_info(request, "LOGIN", user_id=match['id'])
-            if match['role'] == 'STUDENT':
-                count_stats = {
-                    "file": Fileupload.countFileById(match['id'])
-                }
-                file_data_get = Fileupload.get_type_file(match['id'], "Photo")
-                if file_data_get['status']:
-                    file_photo = file_data_get['file']['url']
+
+            count_stats = {
+                "file": Inv_Fileupload.countFileById(match['id'])
+            }
+            file_data_get = Inv_Fileupload.get_type_file(match['id'], "Photo")
+            if file_data_get['status']:
+                file_photo = file_data_get['file']['url']
 
             msg = { "user": match | {"count_stats": count_stats, "file_photo": file_photo }, "access_key": jwt.decode( token, app.config['SECRET_KEY'], algorithms=['HS256'] ), "token": token }
             response = Response( json.dumps(msg), status=200, mimetype='application/json')
@@ -183,7 +182,7 @@ def get_student_login():
 def user(id):
     if request.method == 'GET':
         try:
-            request_data = User.getUserById(id)
+            request_data = Inv_User.getUserById(id)
             msg = {
                 "code": 200,
                 "message": 'Successful',
@@ -210,7 +209,7 @@ def add_user_registration():
         }
         response = Response(json.dumps(msg), status=200, mimetype='application/json')
         return response 
-    elif Code.getCodeByOTP(code, email) is None:
+    elif Inv_Code.getCodeByOTP(code, email) is None:
         return jsonify({ 'code': 403, 'message': 'Resource not found, check your email for the required code'}), 403
 
     try:
@@ -220,10 +219,9 @@ def add_user_registration():
         _other_name = request_data.get('other_name')
         _email = request_data.get('email')
         _description = request_data.get('description')
-        _role = request_data.get('role')
         _address = request_data.get('address')
 
-        if User.query.filter_by(email=request_data.get('email')).first() is not None:
+        if Inv_User.query.filter_by(email=request_data.get('email')).first() is not None:
             msg = {
                 "code": 202,
                 "error": "user already registtered"
@@ -231,7 +229,7 @@ def add_user_registration():
             response = Response( json.dumps(msg), status=200, mimetype='application/json')
             return response
         else:
-            User.createUser(_first_name, _last_name, _other_name, _password, _email, _description, _role, _address)
+            Inv_User.createUser(_first_name, _last_name, _other_name, _password, _email, _description, _address )
             invalidUserOjectErrorMsg = {
                 "code": 200,
                 "message": 'Successful',
@@ -241,7 +239,6 @@ def add_user_registration():
                     "other_name": request_data.get('other_name'),
                     "email": request_data.get('email'),
                     "description": request_data.get('description'),
-                    "role": request_data.get('role'),
                     "address": request_data.get('address')
                 }
             }
@@ -262,13 +259,13 @@ def update_password(id):
     # Fetch the resource from your data source (e.g., database)
     request_data = request.get_json()
     get_device_info(request, "PASSWORD-CHANGE")
-    resource = User.getUserById(id)
+    resource = Inv_User.getUserById(id)
     validate_list = ["id", "password1", "password2", "code", "email"]
     validate_status = False
     msg = {}
     if resource is None:
         return jsonify({ 'code': 404, 'error': 'Resource not found'}), 404
-    elif Code.getCodeByOTP(request_data.get('code'), request_data.get('email') ) is None:
+    elif Inv_Code.getCodeByOTP(request_data.get('code'), request_data.get('email') ) is None:
         return jsonify({ 'code': 403, 'error': 'Resource not found, check your email for the required code'}), 404
     # Get the data from the request
     data = request.get_json()
@@ -292,7 +289,7 @@ def update_password(id):
         }
     else:
         try:
-            if User.update_user( id, request_data.get('password1'), resource):
+            if Inv_User.update_user( id, request_data.get('password1'), resource):
                 get_device_info(request, "PASSWORD-CHANGE", user_id=id)
                 msg = {
                         "code": 200,
@@ -319,13 +316,13 @@ def forget_password():
     # Fetch the resource from your data source (e.g., database)
     request_data = request.get_json()
     get_device_info(request, "PASSWORD-RESET")
-    resource = User.getUserByEmail(request_data.get("email"))
+    resource = Inv_User.getUserByEmail(request_data.get("email"))
     validate_list = ["password1", "password2", "code", "email"]
     validate_status = False
     msg = {}
     if resource is None:
         return jsonify({ 'code': 404, 'error': 'Resource not found'}), 404
-    elif Code.getCodeByOTP(request_data.get('code'), request_data.get('email') ) is None:
+    elif Inv_Code.getCodeByOTP(request_data.get('code'), request_data.get('email') ) is None:
         return jsonify({ 'code': 403, 'error': 'Resource not found, check your email for the required code'}), 404
     # Get the data from the request
     data = request.get_json()
@@ -348,14 +345,14 @@ def forget_password():
         }
     else:
         try:
-            if User.update_email_user( request_data.get("email"), request_data.get('password1'), resource):
+            if Inv_User.update_email_user( request_data.get("email"), request_data.get('password1'), resource):
                 get_device_info(request, "PASSWORD-RESET", user_id=resource['id'])
                 msg = {
                         "code": 200,
                         "status": True,
                         "message": f"user detail(s) updated: {get_req_keys}",
                 }
-                Code.delete_email_code(request_data.get('code'), request_data.get('email') )
+                Inv_Code.delete_email_code(request_data.get('code'), request_data.get('email') )
             else:
                 msg = {
                     "code": 301,
@@ -375,7 +372,7 @@ def send_notification():
     data = request.get_json()
     to_email = data['email']
     subject = 'Notification Subject'
-    users = User.query.filter_by(email=to_email).first()
+    users = Inv_User.query.filter_by(email=to_email).first()
     # print(users.id)
     if users is None:
         pass
@@ -387,7 +384,7 @@ def send_notification():
         else:
             code = generate_random_code()
             render_html = render_template('email.html', code=code)
-            Code.createCode(to_email, code, "OTP")
+            Inv_Code.createCode(to_email, code, "OTP")
             if send_notification_email(to_email, subject, render_html):
                 return jsonify({ 'code': 200, 'msg': 'Notification sent successfully'}), 200
             else:
@@ -401,7 +398,7 @@ def send_otp():
     to_email = data['email']
     get_device_info(request, 'EMAIL-OTP', user_id=None)
     subject = 'Notification Subject'
-    users = User.query.filter_by(email=to_email).first()
+    users = Inv_User.query.filter_by(email=to_email).first()
     if users is None:
         pass
     else:
@@ -409,7 +406,7 @@ def send_otp():
     try:
         code = generate_random_code()
         render_html = render_template('email.html', code=code)
-        Code.createCode(to_email, code, "OTP")
+        Inv_Code.createCode(to_email, code, "OTP")
         if send_notification_email(to_email, subject, render_html):
             return jsonify({ 'code': 200, 'msg': 'Notification sent successfully'}), 200
         else:
@@ -435,12 +432,12 @@ def update_any_user():
         token_data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256']) or None
         data = request.get_json()
         user_id = token_data['id'] or None
-        user_data = User.getUserById(user_id)
+        user_data = Inv_User.getUserById(user_id)
         user_email = user_data['email'] or None
         # Extracting the fields to be updated from the request data
         update_fields = {key: value for key, value in data.items()}
         # update_fields = {key: value for key, value in data.items() if key in ['first_name', 'last_name', 'other_name', 'email','dob', 'address', 'country', 'city', 'street_name', 'lon', 'lat' ]}
-        post_data = User.update_user_any(user_id, user_email, **update_fields)
+        post_data = Inv_User.update_user_any(user_id, user_email, **update_fields)
         if post_data:
             msg = {
                 "code": 200,
@@ -471,13 +468,13 @@ def update_any_user_get():
     count_stats = None
     user_id = return_user_id(request)
     try:
-        match = User.getUserById(user_id)
+        match = Inv_User.getUserById(user_id)
         if match != None and match != False:
             expiration_date = datetime.datetime.utcnow() + datetime.timedelta(hours=6)
             token = jwt.encode({'exp': expiration_date, 'id': match['id']}, app.config['SECRET_KEY'], algorithm='HS256')
             if match['role'] == 'STUDENT':
                 count_stats = {
-                    "file": Fileupload.countFileById(match['id'])
+                    "file": Inv_Fileupload.countFileById(match['id'])
                 }
             msg = { "user": match | {"count_stats": count_stats} }
             response = Response( json.dumps(msg), status=200, mimetype='application/json')
@@ -498,7 +495,7 @@ def upload():
     token_data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256']) or None
     # data = request.get_json()
     user_id = token_data['id'] or None
-    user_data = User.getUserById(user_id)
+    user_data = Inv_User.getUserById(user_id)
     user_email = user_data['email'] or None
 
     msg = {
@@ -527,7 +524,7 @@ def upload():
 @token_required
 def uploadUpdate(id):
     if request.method == 'GET':
-        return Fileupload.getFileById(id)
+        return Inv_Fileupload.getFileById(id)
     if request.method == 'PATCH':
         return fileUploadManager(request, id)
     msg = {
@@ -544,7 +541,7 @@ def fileDelete(id):
         "message": 'Failed',
     }
     if request.method == 'DELETE':
-        if Fileupload.delete_file(id):
+        if Inv_Fileupload.delete_file(id):
             msg = {
                 "code": 200,
                 "message": 'Successful',
@@ -575,7 +572,7 @@ def usageByStudentLastTen():
     count_stats = None
     if request.method == 'GET':
         try:
-            request_data = Usage.getAllUsage(search, page, per_page, status, start_date, end_date)
+            request_data = Inv_Usage.getAllUsage(search, page, per_page, status, start_date, end_date)
             user_id = return_user_id(request)
             msg = {
                 "code": 200,

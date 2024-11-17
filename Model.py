@@ -77,8 +77,8 @@ def alchemy_to_json(obj, visited=None):
     else:
         return obj
 
-class User(db.Model):
-    __tablename__ = 'user'
+class Inv_User(db.Model):
+    __tablename__ = 'inv_user'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False)
     role = db.Column(db.String(80), nullable=False)
@@ -91,21 +91,12 @@ class User(db.Model):
     updated_by = db.Column(db.String(80), nullable=True)
     address = db.Column(db.String(50), nullable=True)
     country = db.Column(db.String(50), nullable=True)
-    city = db.Column(db.String(50), nullable=True)
-    town = db.Column(db.String(50), nullable=True)
-    lon = db.Column(db.String(25), nullable=True)
-    lat = db.Column(db.String(25), nullable=True)
-    dob = db.Column(db.DateTime(), nullable=True)
     phone = db.Column(db.String(15), nullable=True)
     other_info = db.Column(JSON, nullable=True)
-    cla_ref = db.Column(db.String(29), nullable=True, unique=True)
     created_on = db.Column(db.DateTime(), default=datetime.utcnow)
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
-    school = db.relationship('School',  back_populates='user', lazy='joined')
-    evaluator = db.relationship('Evaluator',  back_populates='user', lazy='joined')
-    student = db.relationship('Student', back_populates='user', lazy='select')
-    file = db.relationship('Fileupload', back_populates='user', lazy='select')
-    usage = db.relationship('Usage',  back_populates='user', lazy='joined')
+    file = db.relationship('Inv_Fileupload', back_populates='inv_user', lazy='select')
+    usage = db.relationship('Inv_Usage',  back_populates='inv_user', lazy='joined')
     
     def json(self):
         return {
@@ -147,7 +138,7 @@ class User(db.Model):
                 'updated_on': self.updated_on })
 
     def username_password_match(_username, _password ):
-        new_data = User.query.filter_by(email=_username, password=_password).first()
+        new_data = Inv_User.query.filter_by(email=_username, password=_password).first()
         if new_data is None:
             return False
         elif new_data.role == 'STUDENT':
@@ -160,7 +151,7 @@ class User(db.Model):
     def getAllUsers(page, per_page):        
         # Determine the page and number of items per page from the request (if provided)
         # Query the database with pagination
-        pagination = User.query.paginate(page=page, per_page=per_page, error_out=False)
+        pagination = Inv_User.query.paginate(page=page, per_page=per_page, error_out=False)
         # Extract the items for the current page
         new_data = pagination.items
         # Render nested objects
@@ -178,20 +169,20 @@ class User(db.Model):
         }
 
     def getUserById(id):
-        new_data = User.query.filter_by(id=id).first()
+        new_data = Inv_User.query.filter_by(id=id).first()
         new_data_object = new_data.json()
         return new_data_object
 
     def getUserByEmail(email):
-        new_data = User.query.filter_by(email=email).first()
+        new_data = Inv_User.query.filter_by(email=email).first()
         new_data_object = alchemy_to_json(new_data)
         return new_data_object
 
     def getAllUsersByEmail(_email):
         joined_table_data = []
-        # user_data = db.session.query(User).filter_by(email=_email).join(Business).all()
-        # user_data = db.session.query(User, Business).filter_by(email=_email).join(Business).all()
-        user_data = db.session.query(User).filter_by(email=_email).all()
+        # user_data = db.session.query(Inv_User).filter_by(email=_email).join(Business).all()
+        # user_data = db.session.query(Inv_User, Business).filter_by(email=_email).join(Business).all()
+        user_data = db.session.query(Inv_User).filter_by(email=_email).all()
 
         # get joined tables data .
         for user in user_data:
@@ -214,13 +205,10 @@ class User(db.Model):
         result_json = json.dumps(joined_table_data, indent=2)
         return  result_json
 
-    def createUser(_first_name, _last_name, _other_name, _password, _email, _description, _role, _address, **kwargs):
-        cla_ref = None
+    def createUser(_first_name, _last_name, _other_name, _password, _email, _description, _address, **kwargs):
         user_id = str(uuid.uuid4())
-        if _role == "STUDENT":
-            cla_ref = generate_referance()
 
-        new_user = User( email=_email, password=_password, role=_role, first_name=_first_name, last_name=_last_name, other_name=_other_name, created_by=_email, updated_by=_email, id=user_id, cla_ref=cla_ref )
+        new_user = Inv_User( email=_email, password=_password, first_name=_first_name, last_name=_last_name, other_name=_other_name, created_by=_email, updated_by=_email, id=user_id, address=_address)
         try:
             # Start a new session
             with app.app_context():
@@ -235,13 +223,13 @@ class User(db.Model):
         return new_user
 
     def update_user( _id, _value, _user_data):
-        _user_data = User.query.filter_by(id=_id).first()
+        _user_data = Inv_User.query.filter_by(id=_id).first()
         _user_data.password = hashlib.sha256((_value).encode()).hexdigest()
         db.session.commit()
         return True
 
     def update_email_user( _email, _value, _user_data):
-        _user_data = User.query.filter_by(email=_email).first()
+        _user_data = Inv_User.query.filter_by(email=_email).first()
         _user_data.password = hashlib.sha256((_value).encode()).hexdigest()
         db.session.commit()
         return True
@@ -249,7 +237,7 @@ class User(db.Model):
     def update_user_any(user_id, updated_by, **kwargs):
         try:
             with app.app_context():
-                user = db.session.query(User).filter(User.id == user_id).one_or_none() or []
+                user = db.session.query(Inv_User).filter(Inv_User.id == user_id).one_or_none() or []
                 if user:
                     for key, value in kwargs.items():
                         # allow for other info
@@ -272,29 +260,23 @@ class User(db.Model):
             logger.error(f"Error updating user: {e}")
             raise
 
-    def update_cla_user( _id):
-        with app.app_context():
-            _user_data = User.query.filter_by(id=_id).first()
-            _user_data.cla_ref = "CLA17232725127422"
-            db.session.commit()
-        return True
 
     def delete_user(_id):
-        is_successful = User.query.filter_by(id=_id).delete()
+        is_successful = Inv_User.query.filter_by(id=_id).delete()
         db.session.commit()
         return bool(is_successful)
 
-class Usage(db.Model):
-    __tablename__ = 'usage'
+class Inv_Usage(db.Model):
+    __tablename__ = 'inv_usage'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     type = db.Column(db.String(50), nullable=True)
     info = db.Column(JSON, nullable=True)
     created_on = db.Column(db.DateTime(), default=datetime.utcnow)
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
-    # Add a foreign key, reference to the User table
-    user_id = db.Column(db.String(36), db.ForeignKey('user.id'))
-    # Define a relationship to access the User object from a User object
-    user = db.relationship('User', back_populates='usage', lazy='select')
+    # Add a foreign key, reference to the Inv_User table
+    user_id = db.Column(db.String(36), db.ForeignKey('inv_user.id'))
+    # Define a relationship to access the Inv_User object from a Inv_User object
+    user = db.relationship('Inv_User', back_populates='inv_usage', lazy='select')
 
     def usage_json(self):
         return {
@@ -316,26 +298,26 @@ class Usage(db.Model):
 
     def getAllUsage(search, page, per_page, status, start_date, end_date): 
         # base query_other
-        query_other = Usage.query
+        query_other = Inv_Usage.query
         # filter
         if search:
             query_other = query_other.filter(
                 or_(
-                    Usage.type.ilike(f'%{search}%'),
-                    Usage.id.ilike(f'%{search}%'),
+                    Inv_Usage.type.ilike(f'%{search}%'),
+                    Inv_Usage.id.ilike(f'%{search}%'),
                 )
             )
         
         if start_date:
-            query_other = query_other.filter( Usage.created_on >= start_date )
+            query_other = query_other.filter( Inv_Usage.created_on >= start_date )
         if end_date:
-            query_other = query_other.filter(Usage.created_on <= end_date)
-        query_other = query_other.order_by(Usage.created_on.desc())  
+            query_other = query_other.filter(Inv_Usage.created_on <= end_date)
+        query_other = query_other.order_by(Inv_Usage.created_on.desc())  
         pagination = query_other.paginate(page=page, per_page=per_page, error_out=False)
         # Extract the items list for the current page
         new_data = pagination.items
         # Render nested objects
-        pagination_data = [Usage.usage_json(item) for item in new_data]
+        pagination_data = [Inv_Usage.usage_json(item) for item in new_data]
         # Prepare pagination information to be returned along with the data
         paging_data = {
             'total': pagination.total,
@@ -362,10 +344,10 @@ class Usage(db.Model):
     def create_usage(info, type, user_id):
         _id = str(uuid.uuid4())
         try:
-            usage = Usage(id=_id, info=info, type=type, user_id=user_id)
+            usage = Inv_Usage(id=_id, info=info, type=type, user_id=user_id)
             db.session.add(usage)
             db.session.commit()
-            logger.info(f"Usage created with ID: {usage.id}")
+            logger.info(f"Inv_Usage created with ID: {usage.id}")
             return usage
         except Exception as e:
             db.session.rollback()
@@ -373,8 +355,8 @@ class Usage(db.Model):
             raise
 
 
-class Code(db.Model):
-    __tablename__ = 'code'
+class Inv_Code(db.Model):
+    __tablename__ = 'inv_code'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     code = db.Column(db.String(80), nullable=True)
     type = db.Column(db.String(80), nullable=True)
@@ -441,8 +423,8 @@ class Code(db.Model):
             'pagination': pagination_data
         }
 
-class Fileupload(db.Model):
-    __tablename__ = 'file'
+class Inv_Fileupload(db.Model):
+    __tablename__ = 'inv_file'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     file = db.Column(db.String(80), nullable=True)
     type = db.Column(db.String(80), nullable=True)
@@ -453,11 +435,9 @@ class Fileupload(db.Model):
     created_on = db.Column(db.DateTime(), default=datetime.utcnow)
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
     # Add a foreign key, reference to the user table
-    user_id = db.Column(db.String(36), db.ForeignKey('user.id'))    
-    user = db.relationship('User', back_populates='file', lazy='select')
-    # Add a foreign key, reference to the school table
-    school_id = db.Column(db.String(36), db.ForeignKey('school.id'))
-    school = db.relationship('School', back_populates='file', lazy='select')
+    user_id = db.Column(db.String(36), db.ForeignKey('inv_user.id'))    
+    user = db.relationship('Inv_User', back_populates='inv_file', lazy='select')
+    
     
     def to_dict(self):
         return {
@@ -474,11 +454,11 @@ class Fileupload(db.Model):
         }
 
     def countFileById(user_id):
-        return Fileupload.query.filter_by(user_id=user_id).count()
+        return Inv_Fileupload.query.filter_by(user_id=user_id).count()
     
     def get_type_file(user_id, file_type):
         try:
-            data_get = db.session.query(Fileupload).filter(Fileupload.user_id == user_id, Fileupload.type == file_type).first() or {}
+            data_get = db.session.query(Inv_Fileupload).filter(Inv_Fileupload.user_id == user_id, Inv_Fileupload.type == file_type).first() or {}
 
             logger.info(f"Retrieved {data_get} {file_type}")
             return {
@@ -495,7 +475,7 @@ class Fileupload(db.Model):
 
     # get file by business
     def getFileById(id, page=1, per_page=10): 
-        pagination = Fileupload.query.filter_by(id=id).paginate(page=page, per_page=per_page, error_out=False)
+        pagination = Inv_Fileupload.query.filter_by(id=id).paginate(page=page, per_page=per_page, error_out=False)
         # Extract the items for the current page
         new_data = pagination.items
         # Render nested objects
@@ -514,7 +494,7 @@ class Fileupload(db.Model):
 
     def createFile(_file, _description, _file_type, _doc_format, _user_id, _issued_date, _slug):
         _id = str(uuid.uuid4())
-        new_data = Fileupload( file=_file, description=_description, id=_id, type=_file_type, format=_doc_format, user_id=_user_id, issued_date=_issued_date, slug=_slug)
+        new_data = Inv_Fileupload( file=_file, description=_description, id=_id, type=_file_type, format=_doc_format, user_id=_user_id, issued_date=_issued_date, slug=_slug)
 
         try:
             if new_data:
@@ -532,7 +512,7 @@ class Fileupload(db.Model):
             pass
  
     def updateFile(file, description, business, id):
-        new_data = Fileupload.query.filter_by(id=id).first()
+        new_data = Inv_Fileupload.query.filter_by(id=id).first()
         if file:
             new_data.file = file
         if description:
@@ -541,7 +521,7 @@ class Fileupload(db.Model):
         return alchemy_to_json(new_data)
 
     def delete_file(_id):
-        is_successful = Fileupload.query.filter_by(id=_id).delete()
+        is_successful = Inv_Fileupload.query.filter_by(id=_id).delete()
         db.session.commit()
         return bool(is_successful)
 
