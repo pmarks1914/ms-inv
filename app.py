@@ -503,7 +503,6 @@ def upload():
     }
     if request.method in ['POST', 'PATCH']:
         data_source = fileUploadManager(request, user_id, user_email)
-        print("<>", data_source)
         if data_source['status']:
             msg = {
                 "code": 200,
