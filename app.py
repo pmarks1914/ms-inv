@@ -257,7 +257,7 @@ def add_user_registration():
 def update_password(id):
     # Fetch the resource from your data source (e.g., database)
     request_data = request.get_json()
-    get_device_info(request, "PASSWORD-CHANGE")
+    get_device_info(request, "PASSWORD-CHANGE", user_id=None)
     resource = Inv_User.getUserById(id)
     validate_list = ["id", "password1", "password2", "code", "email"]
     validate_status = False
@@ -314,7 +314,7 @@ def update_password(id):
 def forget_password():
     # Fetch the resource from your data source (e.g., database)
     request_data = request.get_json()
-    get_device_info(request, "PASSWORD-RESET")
+    get_device_info(request, "PASSWORD-RESET", user_id=None)
     resource = Inv_User.getUserByEmail(request_data.get("email"))
     validate_list = ["password1", "password2", "code", "email"]
     validate_status = False
