@@ -51,7 +51,7 @@ def alchemy_to_json(obj, visited=None):
     if isinstance(obj.__class__, DeclarativeMeta):
         fields = {}
         # Determine the role and exclude fields accordingly
-        if hasattr(obj, 'role') and obj.role == 'STUDENT':
+        if hasattr(obj, 'role'):
             exclude_fields = ["query", "registry", "query_class", "password", "student"]
         else:
             exclude_fields = ["query", "registry", "query_class", "password"]
@@ -81,7 +81,6 @@ class Inv_User(db.Model):
     __tablename__ = 'inv_user'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False)
-    role = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
     first_name = db.Column(db.String(80), nullable=True)
     last_name = db.Column(db.String(80), nullable=True)
@@ -95,43 +94,35 @@ class Inv_User(db.Model):
     other_info = db.Column(JSON, nullable=True)
     created_on = db.Column(db.DateTime(), default=datetime.utcnow)
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
-    file = db.relationship('Inv_Fileupload', back_populates='inv_user', lazy='select')
-    usage = db.relationship('Inv_Usage',  back_populates='inv_user', lazy='joined')
+    inv_file = db.relationship('Inv_Fileupload', back_populates='inv_user', lazy='select')
+    inv_usage = db.relationship('Inv_Usage',  back_populates='inv_user', lazy='joined')
     
     def json(self):
         return {
                 'id': self.id,
                 'email': self.email,
-                'role': self.role,
                 'first_name': self.first_name, 
                 'last_name': self.last_name, 
                 'other_name': self.other_name, 
                 'phone': self.phone, 
-                'lat': self.lat, 
-                'lon': self.lon, 
-                'town': self.town, 
-                'city': self.city,
                 'country': self.country,
                 'address': self.address, 
                 'other_info': self.other_info,
-                'cla_ref': self.cla_ref,
                 'created_by': self.created_by,
                 'updated_by': self.updated_by,
                 'created_on': str(self.created_on),
                 'updated_on': str(self.updated_on),
-                'file': [file.to_dict() for file in self.file]
+                'file': [inv_file.to_dict() for inv_file in self.inv_file]
                 }
     def _repr_(self):
         return json.dumps({
                 'id': self.id,
                 'email': self.email,
-                'role': self.role,
                 'first_name': self.first_name, 
                 'last_name': self.last_name, 
                 'other_name': self.other_name, 
                 'country': self.country, 
                 'other_info': self.other_info,
-                'cla_ref': self.cla_ref,
                 'created_by': self.created_by,
                 'updated_by': self.updated_by,
                 'created_on': self.created_on,
@@ -139,9 +130,10 @@ class Inv_User(db.Model):
 
     def username_password_match(_username, _password ):
         new_data = Inv_User.query.filter_by(email=_username, password=_password).first()
+        print(">>>", new_data)
         if new_data is None:
             return False
-        elif new_data.role == 'STUDENT':
+        elif new_data:
             new_data_object = alchemy_to_json(new_data)
             return new_data_object
         else:
@@ -190,7 +182,6 @@ class Inv_User(db.Model):
                 'user': {
                     'id': user.id,
                     'email': user.email,
-                    'role': user.role,
                     'first_name': user.first_name, 
                     'last_name': user.last_name, 
                     'other_name': user.other_name, 
@@ -276,7 +267,7 @@ class Inv_Usage(db.Model):
     # Add a foreign key, reference to the Inv_User table
     user_id = db.Column(db.String(36), db.ForeignKey('inv_user.id'))
     # Define a relationship to access the Inv_User object from a Inv_User object
-    user = db.relationship('Inv_User', back_populates='inv_usage', lazy='select')
+    inv_user = db.relationship('Inv_User', back_populates='inv_usage', lazy='select')
 
     def usage_json(self):
         return {
@@ -367,11 +358,11 @@ class Inv_Code(db.Model):
     def createCode(_email, _code, _type):
         # cron job to delete expired used user sessions
         cutoff_time = datetime.utcnow() - timedelta(minutes=5)
-        Code.query.filter(Code.updated_on <= cutoff_time).delete()
+        Inv_Code.query.filter(Inv_Code.updated_on <= cutoff_time).delete()
         db.session.commit()
 
         _id = str(uuid.uuid4())
-        new_data = Code( account=_email, code=_code, type=_type, id=_id )
+        new_data = Inv_Code( account=_email, code=_code, type=_type, id=_id )
         try:
             # Start a new session
             with app.app_context():
@@ -387,18 +378,18 @@ class Inv_Code(db.Model):
         return new_data
     
     def delete_email_code(_code, _email):
-        is_successful = Code.query.filter_by(account=_email, code=_code).delete()
+        is_successful = Inv_Code.query.filter_by(account=_email, code=_code).delete()
         db.session.commit()
         return bool(is_successful)
     
     def delete_code(_id):
-        is_successful = Code.query.filter_by(id=_id).delete()
+        is_successful = Inv_Code.query.filter_by(id=_id).delete()
         db.session.commit()
         return bool(is_successful)
 
     def getCodeByOTP(_otp, email):
-        if Code.query.filter_by(code=_otp).filter_by(account=email).first():
-            return Code.query.filter_by(code=_otp).filter_by(account=email).first()
+        if Inv_Code.query.filter_by(code=_otp).filter_by(account=email).first():
+            return Inv_Code.query.filter_by(code=_otp).filter_by(account=email).first()
         else:
             return None
 
@@ -406,7 +397,7 @@ class Inv_Code(db.Model):
     def getCodeById(id, page=1, per_page=10):        
         # Determine the page and number of items per page from the request (if provided)
         # Query the database with pagination
-        pagination = Code.query.filter_by(id=id).paginate(page=page, per_page=per_page, error_out=False)
+        pagination = Inv_Code.query.filter_by(id=id).paginate(page=page, per_page=per_page, error_out=False)
         # Extract the items for the current page
         new_data = pagination.items
         # Render nested objects
@@ -436,7 +427,7 @@ class Inv_Fileupload(db.Model):
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
     # Add a foreign key, reference to the user table
     user_id = db.Column(db.String(36), db.ForeignKey('inv_user.id'))    
-    user = db.relationship('Inv_User', back_populates='inv_file', lazy='select')
+    inv_user = db.relationship('Inv_User', back_populates='inv_file', lazy='select')
     
     
     def to_dict(self):
@@ -486,7 +477,7 @@ class Inv_Fileupload(db.Model):
             'per_page': per_page,
             'current_page': page,
             'total_pages': pagination.pages
-        }
+        }    
         return {
             'data': new_data_object,
             'pagination': pagination_data

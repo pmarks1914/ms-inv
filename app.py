@@ -211,7 +211,6 @@ def add_user_registration():
         return response 
     elif Inv_Code.getCodeByOTP(code, email) is None:
         return jsonify({ 'code': 403, 'message': 'Resource not found, check your email for the required code'}), 403
-
     try:
         _password = hashlib.sha256((request_data.get('password1')).encode()).hexdigest()
         _first_name = request_data.get('first_name')
@@ -504,6 +503,7 @@ def upload():
     }
     if request.method in ['POST', 'PATCH']:
         data_source = fileUploadManager(request, user_id, user_email)
+        print("<>", data_source)
         if data_source['status']:
             msg = {
                 "code": 200,
