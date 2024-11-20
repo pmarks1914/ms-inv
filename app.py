@@ -61,7 +61,6 @@ def token_new_required(f):
         try: 
             expiration_date = datetime.datetime.utcnow() + datetime.timedelta(hours=6)
             token = jwt.encode({'exp': expiration_date, 'id': id}, app.config['SECRET_KEY'], algorithm='HS256')
-            print("token", token)   
             jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
             return f(*args, **kwargs)
         except Exception as e:
@@ -278,8 +277,7 @@ def change_password(id):
     request_data = request.get_json()
     get_device_info(request, "PASSWORD-CHANGE", user_id=None)
     resource = Inv_User.getUserById(id)
-
-    validate_list = ["id", "password1", "password2", "email"]
+    validate_list = ["password1", "password2"]
     validate_status = False
     msg = {}
     if resource is None:
