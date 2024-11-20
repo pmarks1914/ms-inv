@@ -485,6 +485,7 @@ class Inv_Fileupload(db.Model):
 
     def createFile(_file, _description, _file_type, _doc_format, _user_id, _issued_date, _slug):
         _id = str(uuid.uuid4())
+        print("---------")
         new_data = Inv_Fileupload( file=_file, description=_description, id=_id, type=_file_type, format=_doc_format, user_id=_user_id, issued_date=_issued_date, slug=_slug)
 
         try:
