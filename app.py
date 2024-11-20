@@ -56,7 +56,6 @@ def token_new_required(f):
         token = request.headers.get('Authorization')
         id = request.headers.get('id')
         token = token.split(" ")[1]
-        print("token", token, " id>>", id)   
         if not token:
             return jsonify({'error': 'Token is missing', 'code': 401}), 401
         try: 
