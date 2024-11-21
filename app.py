@@ -49,6 +49,23 @@ def token_required(f):
             return jsonify({'error': str(e), 'code': 401}), 401
     return wrapper
 
+
+def token_new_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs): 
+        token = request.headers.get('Authorization')
+        id = request.headers.get('id')
+        token = token.split(" ")[1]
+        if not token:
+            return jsonify({'error': 'Token is missing', 'code': 401}), 401
+        try: 
+            expiration_date = datetime.datetime.utcnow() + datetime.timedelta(hours=6)
+            token = jwt.encode({'exp': expiration_date, 'id': id}, app.config['SECRET_KEY'], algorithm='HS256')
+            jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            return f(*args, **kwargs)
+        except Exception as e:
+            return jsonify({'error': str(e), 'code': 401}), 401
+    return wrapper
 def return_user_id(request):
     token = request.headers.get('Authorization')
     msg = {}
@@ -252,7 +269,64 @@ def add_user_registration():
         }
         response = Response(json.dumps(invalidUserOjectErrorMsg), status=200, mimetype='application/json')
         return response
+
+@app.route('/change-password/<string:id>', methods=['PATCH'])
+@token_new_required
+def change_password(id):
+    # Fetch the resource from your data source (e.g., database)
+    request_data = request.get_json()
+    get_device_info(request, "PASSWORD-CHANGE", user_id=None)
+    resource = Inv_User.getUserById(id)
+    validate_list = ["password1", "password2"]
+    validate_status = False
+    msg = {}
+    if resource is None:
+        return jsonify({ 'code': 404, 'error': 'Resource not found'}), 404
+    # Get the data from the request
+    data = request.get_json()
+    get_req_keys = None
+    get_req_keys_value_pair = None
+    # Update only the provided fields
+    for key, value in data.items():
+        if key in validate_list:
+            validate_status = True
+            if get_req_keys is None:
+                get_req_keys = key
+                get_req_keys_value_pair = f'"{key}": "{value}"'
+            else:
+                get_req_keys = f"{get_req_keys}, {key}"
+                get_req_keys_value_pair = f'{get_req_keys_value_pair}, "{key}": "{value}"'
   
+    if validate_status is False:
+        msg = {
+            "code": 201,
+            "message": str(validate_list)
+        }
+    else:
+        try:
+            if Inv_User.update_user( id, request_data.get('password1'), resource):
+                get_device_info(request, "PASSWORD-CHANGE", user_id=id)
+                msg = {
+                        "code": 200,
+                        "message": f"user detail(s) updated: {get_req_keys}",
+                        # "data": 'f{instance_dict}'
+                }
+            else:
+                msg = {
+                    "code": 301,
+                    "message": f"user detail(s) failed to updated.",
+            }
+        except Exception as e:
+            msg = {
+                    "code": 501,
+                    "error :" : str(e),
+                    "message": "server error." 
+                }
+
+    response = Response( json.dumps(msg), status=200, mimetype='application/json')
+    return response  
+
+
 @app.route('/v1/change/password/<string:id>', methods=['PATCH'])
 def update_password(id):
     # Fetch the resource from your data source (e.g., database)
