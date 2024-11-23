@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>${invoiceData?.invoiceType || "Invoice"}</title>
+    <title>{{ data.invoiceType }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -81,7 +81,7 @@
     <table style="width: 100%; margin-bottom: 20px; padding-left: 0px; border: none;">
         <tr style="border: 0px solid #fff; padding-left: 0px;">
             <td style="width: 30%; vertical-align: top; border: 0px solid #fff; padding-left: 0px;">
-                <h1>${invoiceData?.invoiceType || "Invoice"}</h1>
+                <h1>{{ data.invoiceType }}</h1>
             </td>
             <td style="width: 40%; vertical-align: top; border: 0px solid #fff"> </td>
             <td style="width: 30%; text-align: right; border: 0px solid #fff">
@@ -96,24 +96,24 @@
             <td style="width: 40%; vertical-align: top; border: 0px solid #fff; padding-left: 0px;">
                 <div class="section-bill-from padding-left: 0px;">
                     <h2>From</h2>
-                    <p>${invoiceData?.companyName}</p>
-                    <p>${invoiceData?.companyAddress}</p>
+                    <p>{{ data.companyName }}</p>
+                    <p>{{ data.companyAddress }}</p>
                 </div>
             </td>
             <td style="width: 40%; vertical-align: top; border: 0px solid #fff">
                 <div class="section-bill-to">
                     <h2>Bill To</h2>
-                    <p>${invoiceData?.clientName}</p>
-                    <p>${invoiceData?.clientAddress}</p>
+                    <p>{{ data.clientName }}</p>
+                    <p>{{ data.clientAddress }}</p>
                 </div>
             </td>
         </tr>
     </table>
 
     <div class="section">
-        <h2>${invoiceData?.invoiceType || "Invoice"} Details</h2>
-        <p>${invoiceData?.invoiceType || "Invoice"} Number: ${invoiceData?.invoiceNumber}</p>
-        <p>Date: ${invoiceData?.date}</p>
+        <h2>{{ data.invoiceType || "Invoice" }} Details</h2>
+        <p>{{ data.invoiceType || "Invoice" }} Number: {{ data.invoiceNumber }}</p>
+        <p>Date: {{ data.date }}</p>
     </div>
 
     <div class="section">
@@ -128,14 +128,14 @@
                 </tr>
             </thead>
             <tbody>
-                ${invoiceData?.items?.map(item => `
+                {{ data.items.map(item => `
                 <tr>
-                    <td>${item.description}</td>
-                    <td>${item.quantity}</td>
-                    <td>${invoiceData?.currency} ${item.price.toFixed(2)}</td>
-                    <td class="text-right">${invoiceData?.currency} ${(item.quantity * item.price).toFixed(2)}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ data.currency }} {{ item.price.toFixed(2) }}</td>
+                    <td class="text-right">{{ data.currency} ${(item.quantity * item.price).toFixed(2) }}</td>
                 </tr>
-                `).join('')}
+                `).join('') }}
 
 
                 <tr style=" padding-top: 0px; margin-top: 0px; border: 1px solid #000">
@@ -144,9 +144,9 @@
                     <td style="border: 0px solid #fff"></td>
                     <td class="text-right" style="border: 0px solid #fff">
                         <div class="section-total">
-                            <p>Subtotal: ${invoiceData?.currency} ${calculateSubtotal().toFixed(2)}</p>
-                            <p>Tax (10%): ${invoiceData?.currency} ${calculateTax().toFixed(2)}</p>
-                            <p class="total">Total: ${invoiceData?.currency} ${calculateTotal().toFixed(2)}</p>
+                            <p>Subtotal: {{ data.currency }} {{ calculateSubtotal().toFixed(2) }}</p>
+                            <p>Tax (10%): {{ data.currency }} {{ calculateTax().toFixed(2) }}</p>
+                            <p class="total">Total: {{ data.currency }} {{ calculateTotal().toFixed(2) }}</p>
                         </div>
                     </td>
                 </tr>
@@ -157,7 +157,7 @@
 
     <div class="section">
         <h2>Notes</h2>
-        <p>${invoiceData?.notes}</p>
+        <p>{{ data.notes }}</p>
     </div>
 </body>
 
