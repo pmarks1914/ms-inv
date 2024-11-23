@@ -629,6 +629,36 @@ def fileDelete(id):
         return Response( json.dumps(msg), status=404, mimetype='application/json')
 
 
+
+@app.route('/inv/template', methods=['POST'])
+def inv_template():
+    data = request.get_json()
+    to_email = data['email']
+    subject = 'Notification Subject'
+    users = Inv_User.query.filter_by(email=to_email).first()
+    
+    inv_temp = {}
+
+    # print(users.id)
+    if inv_temp is None:
+        pass
+    else:
+        get_device_info(request, 'INV-TEMPLATE', user_id=None)
+    try:
+        if users:
+            return 'User exist.'
+        else:
+            code = generate_random_code()
+            render_html = render_template('email.html', code=code)
+            Inv_Code.createCode(to_email, code, "OTP")
+            if send_notification_email(to_email, subject, render_html):
+                return jsonify({ 'code': 200, 'msg': 'Notification sent successfully'}), 200
+            else:
+                return 'Failed to send notification.'
+    except Exception as e:
+        return str(e)
+
+
 @app.route('/usage-paging', methods=['GET'])
 @token_required
 def usageByStudentLastTen():
