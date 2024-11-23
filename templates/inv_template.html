@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>{{ data_inv.invoiceType }}</title>
+    <title>{{ data_inv.invoiceType or "Invoice" }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -31,9 +30,7 @@
             margin-bottom: 20px;
         }
 
-        table,
-        th,
-        td {
+        table, th, td {
             border: 1px solid #000;
             padding: 8px;
             text-align: left;
@@ -73,20 +70,18 @@
         }
     </style>
 </head>
-
-
 <body>
-    <!-- <img src=${logo} alt="Company Logo" class="watermark" style="width: 400px; height: auto;" /> -->
+    <!-- <img src="{{ logo }}" alt="Company Logo" class="watermark" style="width: 400px; height: auto;" /> -->
 
-    <!-- Table layout for logo and invoice Type -->
+    <!-- Table layout for logo and invoice type -->
     <table style="width: 100%; margin-bottom: 20px; padding-left: 0px; border: none;">
         <tr style="border: 0px solid #fff; padding-left: 0px;">
             <td style="width: 30%; vertical-align: top; border: 0px solid #fff; padding-left: 0px;">
-                <h1>{{ data_inv.invoiceType }}</h1>
+                <h1>{{ data_inv.invoiceType or "Invoice" }}</h1>
             </td>
-            <td style="width: 40%; vertical-align: top; border: 0px solid #fff"> </td>
+            <td style="width: 40%; vertical-align: top; border: 0px solid #fff"></td>
             <td style="width: 30%; text-align: right; border: 0px solid #fff">
-                <img src={{ data_inv.logo }} alt="Company Logo" class="logo" />
+                <img src="{{ logo }}" alt="Company Logo" class="logo" />
             </td>
         </tr>
     </table>
@@ -112,8 +107,8 @@
     </table>
 
     <div class="section">
-        <h2>{{ data_inv.invoiceType }} Details</h2>
-        <p>{{ data_inv.invoiceType }} Number: {{ data_inv.invoiceNumber }}</p>
+        <h2>{{ data_inv.invoiceType or "Invoice" }} Details</h2>
+        <p>{{ data_inv.invoiceType or "Invoice" }} Number: {{ data_inv.invoiceNumber }}</p>
         <p>Date: {{ data_inv.date }}</p>
     </div>
 
@@ -129,43 +124,31 @@
                 </tr>
             </thead>
             <tbody>
-                
                 {% for item in inv_items %}
                 <tr>
-                  <td>{{ item.description }}</td>
-                  <td>{{ item.quantity }}</td>
-                  <td>{{ data_inv.currency }} {{ "%.2f"|format(item.price) }}</td>
-                  <td class="text-right">{{ data_inv.currency }} {{ "%.2f"|format(item.quantity * item.price) }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ inv_items.currency }} {{ "%.2f"|format(item.price) }}</td>
+                    <td class="text-right">{{ inv_items.currency }} {{ "%.2f"|format(item.quantity * item.price) }}</td>
                 </tr>
                 {% endfor %}
-                
 
-
-                <tr style=" padding-top: 0px; margin-top: 0px; border: 1px solid #000">
+                <tr style="padding-top: 0px; margin-top: 0px; border: 1px solid #000">
                     <td style="border: 0px solid #fff"></td>
                     <td style="border: 0px solid #fff"></td>
                     <td style="border: 0px solid #fff"></td>
                     <td class="text-right" style="border: 0px solid #fff">
-                        
-                        
-
                         <div class="section-total">
-                            {% set subtotal = 0 %}
-                            {% for item in inv_items %}
-                                {% set subtotal = subtotal + (item.quantity * item.price) %}
-                            {% endfor %}
+                            {% set subtotal = inv_items | sum(attribute='price') %}
                             {% set tax = subtotal * 0.10 %}
                             {% set total = subtotal + tax %}
-                            
                             <p>Subtotal: {{ data_inv.currency }} {{ "%.2f"|format(subtotal) }}</p>
                             <p>Tax (10%): {{ data_inv.currency }} {{ "%.2f"|format(tax) }}</p>
                             <p class="total">Total: {{ data_inv.currency }} {{ "%.2f"|format(total) }}</p>
                         </div>
-                        
                     </td>
                 </tr>
             </tbody>
-
         </table>
     </div>
 
@@ -174,5 +157,4 @@
         <p>{{ data_inv.notes }}</p>
     </div>
 </body>
-
 </html>
