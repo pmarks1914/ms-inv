@@ -637,7 +637,31 @@ def inv_template():
     subject = 'Notification Subject'
     users = Inv_User.query.filter_by(email=to_email).first()
 
-    inv_temp = {}
+    inv_temp = {
+        "invoiceNumber": "INV-002",
+        "date": "2024-11-10",
+        "dueDate": "",
+        "timeStamp": "2024-11-10T16: 08: 34.571Z",
+        "companyName": "Cone ",
+        "companyAddress": "P.o.Box 23456 PME st.",
+        "clientName": "John Doe",
+        "clientAddress": "Pine Street ",
+        "items": [
+            {
+                "description": "Item",
+                "quantity": 1,
+                "price": 100
+            },
+            {
+                "description": "Item",
+                "quantity": 1,
+                "price": 100
+            }
+        ],
+        "notes": "This is for the purchase of goods and services",
+        "currency": "USD",
+        "invoiceType": "Pro-Forma"
+    }
 
     # print(users.id)
     if inv_temp is None:
@@ -646,7 +670,7 @@ def inv_template():
         get_device_info(request, 'INV-TEMPLATE', user_id=None)
     try:
         
-        render_html = render_template('email.html', data=inv_temp)
+        render_html = render_template('inv_template.html', data=inv_temp)
         return jsonify({ 'code': 200, 'msg': 'Successful', 'render_html': render_html }), 200
     except Exception as e:
         return str(e)
