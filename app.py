@@ -630,12 +630,11 @@ def fileDelete(id):
 
 
 
-@app.route('/inv/template', methods=['POST'])
+@app.route('/inv/template', methods=['GET'])
 def inv_template():
-    data = request.get_json()
+    # data = request.get_json()
     to_email = "pmarks1914@gmail.com"
     subject = 'Notification Subject'
-    users = Inv_User.query.filter_by(email=to_email).first()
 
     inv_temp = {
         "invoiceNumber": "INV-002",
@@ -663,7 +662,7 @@ def inv_template():
         "invoiceType": "Pro-Forma"
     }
 
-    # print(users.id)
+    # print("inv_temp ", inv_temp)
     if inv_temp is None:
         pass
     else:
