@@ -630,6 +630,10 @@ def fileDelete(id):
 
 
 
+@app.template_filter('format_currency')
+def format_currency(value, currency):
+    return f"{currency} {value:.2f}"
+
 @app.route('/inv/template', methods=['GET'])
 def inv_template():
     # data = request.get_json()
@@ -667,9 +671,11 @@ def inv_template():
         pass
     else:
         get_device_info(request, 'INV-TEMPLATE', user_id=None)
+        pass
     try:
         
-        render_html = render_template('inv_template.html', data=inv_temp)
+        render_html = render_template('inv_template.html', data_inv=inv_temp, inv_items=inv_temp['items'])
+        # print("render_html ", render_html)
         return jsonify({ 'code': 200, 'msg': 'Successful', 'render_html': render_html }), 200
     except Exception as e:
         return str(e)

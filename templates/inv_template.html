@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>{{ data.invoiceType }}</title>
+    <title>{{ data_inv.invoiceType }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -74,6 +74,7 @@
     </style>
 </head>
 
+
 <body>
     <!-- <img src=${logo} alt="Company Logo" class="watermark" style="width: 400px; height: auto;" /> -->
 
@@ -81,11 +82,11 @@
     <table style="width: 100%; margin-bottom: 20px; padding-left: 0px; border: none;">
         <tr style="border: 0px solid #fff; padding-left: 0px;">
             <td style="width: 30%; vertical-align: top; border: 0px solid #fff; padding-left: 0px;">
-                <h1>{{ data.invoiceType }}</h1>
+                <h1>{{ data_inv.invoiceType }}</h1>
             </td>
             <td style="width: 40%; vertical-align: top; border: 0px solid #fff"> </td>
             <td style="width: 30%; text-align: right; border: 0px solid #fff">
-                <img src={{ data.logo }} alt="Company Logo" class="logo" />
+                <img src={{ data_inv.logo }} alt="Company Logo" class="logo" />
             </td>
         </tr>
     </table>
@@ -96,24 +97,24 @@
             <td style="width: 40%; vertical-align: top; border: 0px solid #fff; padding-left: 0px;">
                 <div class="section-bill-from padding-left: 0px;">
                     <h2>From</h2>
-                    <p>{{ data.companyName }}</p>
-                    <p>{{ data.companyAddress }}</p>
+                    <p>{{ data_inv.companyName }}</p>
+                    <p>{{ data_inv.companyAddress }}</p>
                 </div>
             </td>
             <td style="width: 40%; vertical-align: top; border: 0px solid #fff">
                 <div class="section-bill-to">
                     <h2>Bill To</h2>
-                    <p>{{ data.clientName }}</p>
-                    <p>{{ data.clientAddress }}</p>
+                    <p>{{ data_inv.clientName }}</p>
+                    <p>{{ data_inv.clientAddress }}</p>
                 </div>
             </td>
         </tr>
     </table>
 
     <div class="section">
-        <h2>{{ data.invoiceType || "Invoice" }} Details</h2>
-        <p>{{ data.invoiceType || "Invoice" }} Number: {{ data.invoiceNumber }}</p>
-        <p>Date: {{ data.date }}</p>
+        <h2>{{ data_inv.invoiceType }} Details</h2>
+        <p>{{ data_inv.invoiceType }} Number: {{ data_inv.invoiceNumber }}</p>
+        <p>Date: {{ data_inv.date }}</p>
     </div>
 
     <div class="section">
@@ -128,14 +129,16 @@
                 </tr>
             </thead>
             <tbody>
-                {{ data.items.map(item => `
+                
+                {% for item in inv_items %}
                 <tr>
-                    <td>{{ item.description }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>{{ data.currency }} {{ item.price.toFixed(2) }}</td>
-                    <td class="text-right">{{ data.currency} ${(item.quantity * item.price).toFixed(2) }}</td>
+                  <td>{{ item.description }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ data_inv.currency }} {{ "%.2f"|format(item.price) }}</td>
+                  <td class="text-right">{{ data_inv.currency }} {{ "%.2f"|format(item.quantity * item.price) }}</td>
                 </tr>
-                `).join('') }}
+                {% endfor %}
+                
 
 
                 <tr style=" padding-top: 0px; margin-top: 0px; border: 1px solid #000">
@@ -143,11 +146,22 @@
                     <td style="border: 0px solid #fff"></td>
                     <td style="border: 0px solid #fff"></td>
                     <td class="text-right" style="border: 0px solid #fff">
+                        
+                        
+
                         <div class="section-total">
-                            <p>Subtotal: {{ data.currency }} {{ calculateSubtotal().toFixed(2) }}</p>
-                            <p>Tax (10%): {{ data.currency }} {{ calculateTax().toFixed(2) }}</p>
-                            <p class="total">Total: {{ data.currency }} {{ calculateTotal().toFixed(2) }}</p>
+                            {% set subtotal = 0 %}
+                            {% for item in inv_items %}
+                                {% set subtotal = subtotal + (item.quantity * item.price) %}
+                            {% endfor %}
+                            {% set tax = subtotal * 0.10 %}
+                            {% set total = subtotal + tax %}
+                            
+                            <p>Subtotal: {{ data_inv.currency }} {{ "%.2f"|format(subtotal) }}</p>
+                            <p>Tax (10%): {{ data_inv.currency }} {{ "%.2f"|format(tax) }}</p>
+                            <p class="total">Total: {{ data_inv.currency }} {{ "%.2f"|format(total) }}</p>
                         </div>
+                        
                     </td>
                 </tr>
             </tbody>
@@ -157,7 +171,7 @@
 
     <div class="section">
         <h2>Notes</h2>
-        <p>{{ data.notes }}</p>
+        <p>{{ data_inv.notes }}</p>
     </div>
 </body>
 
