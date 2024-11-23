@@ -633,10 +633,10 @@ def fileDelete(id):
 @app.route('/inv/template', methods=['POST'])
 def inv_template():
     data = request.get_json()
-    to_email = data['email']
+    to_email = "pmarks1914@gmail.com"
     subject = 'Notification Subject'
     users = Inv_User.query.filter_by(email=to_email).first()
-    
+
     inv_temp = {}
 
     # print(users.id)
@@ -645,16 +645,9 @@ def inv_template():
     else:
         get_device_info(request, 'INV-TEMPLATE', user_id=None)
     try:
-        if users:
-            return 'User exist.'
-        else:
-            code = generate_random_code()
-            render_html = render_template('email.html', code=code)
-            Inv_Code.createCode(to_email, code, "OTP")
-            if send_notification_email(to_email, subject, render_html):
-                return jsonify({ 'code': 200, 'msg': 'Notification sent successfully'}), 200
-            else:
-                return 'Failed to send notification.'
+        
+        render_html = render_template('email.html', data=inv_temp)
+        return jsonify({ 'code': 200, 'msg': 'Successful', 'render_html': render_html }), 200
     except Exception as e:
         return str(e)
 
