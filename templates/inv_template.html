@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ data_inv.invoiceType or "Invoice" }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .logo {
+            width: 90px;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 40%;
+            left: 12%;
+            transform: translate(-50%, -50%);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .total {
+            font-weight: bold;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 20px;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .watermark {
+                opacity: 0.3 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- <img src="{{ logo }}" alt="Company Logo" class="watermark" style="width: 400px; height: auto;" /> -->
+
+    <!-- Table layout for logo and invoice type -->
+    <table style="width: 100%; margin-bottom: 20px; padding-left: 0px; border: none;">
+        <tr style="border: 0px solid #fff; padding-left: 0px;">
+            <td style="width: 30%; vertical-align: top; border: 0px solid #fff; padding-left: 0px;">
+                <h1>{{ data_inv.invoiceType or "Invoice" }}</h1>
+            </td>
+            <td style="width: 40%; vertical-align: top; border: 0px solid #fff"></td>
+            <td style="width: 30%; text-align: right; border: 0px solid #fff">
+                <img src="{{ logo }}" alt="Company Logo" class="logo" />
+            </td>
+        </tr>
+    </table>
+
+    <!-- Table layout for billing sections -->
+    <table style="width: 100%; margin-bottom: 0px; padding-left: 0px; border: none;">
+        <tr style="border: 0px solid #fff; padding-left: 0px;">
+            <td style="width: 40%; vertical-align: top; border: 0px solid #fff; padding-left: 0px;">
+                <div class="section-bill-from padding-left: 0px;">
+                    <h2>From</h2>
+                    <p>{{ data_inv.companyName }}</p>
+                    <p>{{ data_inv.companyAddress }}</p>
+                </div>
+            </td>
+            <td style="width: 40%; vertical-align: top; border: 0px solid #fff">
+                <div class="section-bill-to">
+                    <h2>Bill To</h2>
+                    <p>{{ data_inv.clientName }}</p>
+                    <p>{{ data_inv.clientAddress }}</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="section">
+        <h2>{{ data_inv.invoiceType or "Invoice" }} Details</h2>
+        <p>{{ data_inv.invoiceType or "Invoice" }} Number: {{ data_inv.invoiceNumber }}</p>
+        <p>Date: {{ data_inv.date }}</p>
+    </div>
+
+    <div class="section">
+        <h2>Items</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inv_items %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ inv_items.currency }} {{ "%.2f"|format(item.price) }}</td>
+                    <td class="text-right">{{ inv_items.currency }} {{ "%.2f"|format(item.quantity * item.price) }}</td>
+                </tr>
+                {% endfor %}
+
+                <tr style="padding-top: 0px; margin-top: 0px; border: 1px solid #000">
+                    <td style="border: 0px solid #fff !important"></td>
+                    <td style="border: 0px solid #fff !important"></td>
+                    <td style="border: 0px solid #fff !important"></td>
+                    <td class="text-right" style="border: 0px solid #fff">
+                        <div class="section-total">
+                            {% set subtotal = inv_items | sum(attribute='price') %}
+                            {% set tax = subtotal * inv_tax / 100 %}
+                            {% set total = subtotal + tax %}
+                            <p>Subtotal: {{ data_inv.currency }} {{ "%.2f"|format(subtotal) }}</p>
+
+                            <p>Tax ({{ inv_tax }}%): {{ data_inv.currency }} {{ "%.2f"|format(tax) }}</p>
+
+                            <p class="total">Total: {{ data_inv.currency }} {{ "%.2f"|format(total) }}</p>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Notes</h2>
+        <p>{{ data_inv.notes }}</p>
+    </div>
+</body>
+</html>

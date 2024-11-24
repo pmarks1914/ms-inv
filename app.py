@@ -629,6 +629,58 @@ def fileDelete(id):
         return Response( json.dumps(msg), status=404, mimetype='application/json')
 
 
+
+@app.template_filter('format_currency')
+def format_currency(value, currency):
+    return f"{currency} {value:.2f}"
+
+@app.route('/inv/template', methods=['GET'])
+def inv_template():
+    # data = request.get_json()
+    to_email = "pmarks1914@gmail.com"
+    subject = 'Notification Subject'
+
+    inv_temp = {
+        "invoiceNumber": "INV-002",
+        "date": "2024-11-10",
+        "dueDate": "",
+        "timeStamp": "2024-11-10T16: 08: 34.571Z",
+        "companyName": "Cone ",
+        "companyAddress": "P.o.Box 23456 PME st.",
+        "clientName": "John Doe",
+        "clientAddress": "Pine Street ",
+        "items": [
+            {
+                "description": "Item",
+                "quantity": 1,
+                "price": 100
+            },
+            {
+                "description": "Item",
+                "quantity": 1,
+                "price": 100
+            }
+        ],
+        "notes": "This is for the purchase of goods and services",
+        "currency": "USD",
+        "invoiceType": "Pro-Forma"
+    }
+
+    # print("inv_temp ", inv_temp)
+    if inv_temp is None:
+        pass
+    else:
+        get_device_info(request, 'INV-TEMPLATE', user_id=None)
+        pass
+    try:
+        
+        render_html = render_template('inv_template.html', data_inv=inv_temp, inv_items=inv_temp['items'], inv_tax=20)
+        # print("render_html ", render_html)
+        return jsonify({ 'code': 200, 'msg': 'Successful', 'render_html': str(render_html) }), 200
+    except Exception as e:
+        return str(e)
+
+
 @app.route('/usage-paging', methods=['GET'])
 @token_required
 def usageByStudentLastTen():
