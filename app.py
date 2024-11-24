@@ -642,6 +642,7 @@ def inv_template():
 
     inv_temp = {
         "invoiceNumber": "INV-002",
+        "logo": "https://test.ventureinnovo.com/static/media/logo.a51192bf9b20006900d6.png",
         "date": "2024-11-10",
         "dueDate": "",
         "timeStamp": "2024-11-10T16: 08: 34.571Z",
