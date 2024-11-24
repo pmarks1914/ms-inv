@@ -674,9 +674,9 @@ def inv_template():
         pass
     try:
         
-        render_html = render_template('inv_template.html', data_inv=inv_temp, inv_items=inv_temp['items'])
+        render_html = render_template('inv_template.html', data_inv=inv_temp, inv_items=inv_temp['items'], inv_tax=20)
         # print("render_html ", render_html)
-        return jsonify({ 'code': 200, 'msg': 'Successful', 'render_html': render_html }), 200
+        return jsonify({ 'code': 200, 'msg': 'Successful', 'render_html': str(render_html) }), 200
     except Exception as e:
         return str(e)
 

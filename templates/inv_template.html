@@ -134,16 +134,18 @@
                 {% endfor %}
 
                 <tr style="padding-top: 0px; margin-top: 0px; border: 1px solid #000">
-                    <td style="border: 0px solid #fff"></td>
-                    <td style="border: 0px solid #fff"></td>
-                    <td style="border: 0px solid #fff"></td>
+                    <td style="border: 0px solid #fff !important"></td>
+                    <td style="border: 0px solid #fff !important"></td>
+                    <td style="border: 0px solid #fff !important"></td>
                     <td class="text-right" style="border: 0px solid #fff">
                         <div class="section-total">
                             {% set subtotal = inv_items | sum(attribute='price') %}
-                            {% set tax = subtotal * 0.10 %}
+                            {% set tax = subtotal * inv_tax / 100 %}
                             {% set total = subtotal + tax %}
                             <p>Subtotal: {{ data_inv.currency }} {{ "%.2f"|format(subtotal) }}</p>
-                            <p>Tax (10%): {{ data_inv.currency }} {{ "%.2f"|format(tax) }}</p>
+
+                            <p>Tax ({{ inv_tax }}%): {{ data_inv.currency }} {{ "%.2f"|format(tax) }}</p>
+
                             <p class="total">Total: {{ data_inv.currency }} {{ "%.2f"|format(total) }}</p>
                         </div>
                     </td>
