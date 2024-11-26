@@ -642,6 +642,7 @@ def inv_template():
 
     inv_temp = {
         "invoiceNumber": "INV-002",
+        "logo": "https://test.ventureinnovo.com/static/media/logo.a51192bf9b20006900d6.png",
         "date": "2024-11-10",
         "dueDate": "",
         "timeStamp": "2024-11-10T16: 08: 34.571Z",
@@ -676,7 +677,8 @@ def inv_template():
         
         render_html = render_template('inv_template.html', data_inv=inv_temp, inv_items=inv_temp['items'], inv_tax=20)
         # print("render_html ", render_html)
-        return jsonify({ 'code': 200, 'msg': 'Successful', 'render_html': str(render_html) }), 200
+        # return jsonify({ 'code': 200, 'msg': 'Successful', 'render_html': str(render_html) }), 200
+        return  render_html
     except Exception as e:
         return str(e)
 
