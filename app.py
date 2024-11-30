@@ -641,41 +641,50 @@ def inv_template():
     subject = 'Notification Subject'
 
     inv_temp = {
-        "invoiceNumber": "INV-002",
+        "invoiceNumber": "00230704197",
         "logo": "https://test.ventureinnovo.com/static/media/logo.a51192bf9b20006900d6.png",
-        "date": "2024-11-10",
+        "date": "2024-11-26",
         "dueDate": "",
-        "timeStamp": "2024-11-10T16: 08: 34.571Z",
-        "companyName": "Cone ",
-        "companyAddress": "P.o.Box 23456 PME st.",
-        "clientName": "John Doe",
-        "clientAddress": "Pine Street ",
+        "timeStamp": "2024-11-26T16: 08: 34.571Z",
+        "companyName": "Cone Agro & Logistics ",
+        "companyAddress": "Pantang-Asore Junc. PnT, Pantang Abokobi Road",
+        "clientName": "BUI POWER AUTHORITY",
+        "clientAddress": " ",
         "items": [
             {
-                "description": "Item",
-                "quantity": 1,
-                "price": 100
+                "description": "265/65/R17 - 112 S",
+                "quantity": 6,
+                "price":  4812.00
             },
             {
-                "description": "Item",
-                "quantity": 1,
-                "price": 100
+                "description": "225/60/R17 - 98 H",
+                "quantity": 7,
+                "price":  5615.60
+            },
+            {
+                "description": "225/70/R17C - 108/106 ",
+                "quantity": 7,
+                "price":  4812.00
             }
         ],
         "notes": "This is for the purchase of goods and services",
-        "currency": "USD",
+        "currency": "GHS",
         "invoiceType": "Pro-Forma"
     }
+
+
+    # sub total computation
+    sub_total = sum(item['price'] * item['quantity'] for item in inv_temp['items'])
 
     # print("inv_temp ", inv_temp)
     if inv_temp is None:
         pass
     else:
-        get_device_info(request, 'INV-TEMPLATE', user_id=None)
+        # get_device_info(request, 'INV-TEMPLATE', user_id=None)
         pass
     try:
         
-        render_html = render_template('inv_template.html', data_inv=inv_temp, inv_items=inv_temp['items'], inv_tax=20)
+        render_html = render_template('inv_template.html', data_inv=inv_temp, inv_items=inv_temp['items'], inv_tax=4, sub_total=sub_total)
         # print("render_html ", render_html)
         # return jsonify({ 'code': 200, 'msg': 'Successful', 'render_html': str(render_html) }), 200
         return  render_html
@@ -716,6 +725,7 @@ def usageByStudentLastTen():
             return {"code": 203, "message": 'Failed', "error": str(e)}
     else:
         return {"code": 400, "message": 'Failed' }
+
 
 
 if __name__ == "__main__":
