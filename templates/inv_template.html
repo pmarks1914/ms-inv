@@ -81,7 +81,7 @@
             </td>
             <td style="width: 40%; vertical-align: top; border: 0px solid #fff"></td>
             <td style="width: 30%; text-align: right; border: 0px solid #fff">
-                <img src="{{ data_inv.logo }}" alt="Company Logo" class="logo" />
+                <!-- <img src="{{ data_inv.logo }}" alt="Company Logo" class="logo" /> -->
             </td>
         </tr>
     </table>
@@ -139,7 +139,7 @@
                     <td style="border: 0px solid #fff !important"></td>
                     <td class="text-right" style="border: 0px solid #fff">
                         <div class="section-total">
-                            {% set subtotal = inv_items | sum(attribute='price') %}
+                            {% set subtotal = sub_total %}
                             {% set tax = subtotal * inv_tax / 100 %}
                             {% set total = subtotal + tax %}
                             <p>Subtotal: {{ data_inv.currency }} {{ "%.2f"|format(subtotal) }}</p>
