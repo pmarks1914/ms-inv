@@ -684,7 +684,6 @@ def inv_template():
     try:
         
         render_html = render_template('inv_template.html', data_inv=inv_temp, inv_items=inv_temp['items'], inv_tax=4, sub_total=sub_total)
-        # print("render_html ", render_html)
         # return jsonify({ 'code': 200, 'msg': 'Successful', 'render_html': str(render_html) }), 200
         return  render_html
     except Exception as e:
