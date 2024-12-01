@@ -676,7 +676,6 @@ def inv_template():
     # sub total computation
     sub_total = sum(item['price'] * item['quantity'] for item in inv_temp['items'])
 
-    # print("inv_temp ", inv_temp)
     if inv_temp is None:
         pass
     else:
