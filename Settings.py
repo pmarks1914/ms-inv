@@ -1,9 +1,5 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-
-
-from flask_admin.contrib.sqla import ModelView
-
 import os
 # import mysql.connector
 from sqlalchemy import create_engine
