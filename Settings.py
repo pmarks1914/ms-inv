@@ -21,3 +21,4 @@ engine = create_engine(DB_URL)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+

@@ -27,10 +27,29 @@ import uuid
 import sys
 from dotenv import dotenv_values
 from sqlalchemy import inspect, func, or_
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+
+from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin
+
 
 get_env = dotenv_values(".env") 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+
+
+
+# Initialize Flask-Admin
+admin = Admin(app, name='Admin Dashboard', template_mode='bootstrap4')
+
+
+# Define Roles and Users
+roles_users = db.Table('roles_users',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id'))
+)
+
  
 list_account_status = ['PENDING', 'APPROVED', 'REJECTED']
 list_status_evaluation = ["PENDING", "STARTED", "REJECTED", "COMPLETED"]
@@ -77,6 +96,11 @@ def alchemy_to_json(obj, visited=None):
     else:
         return obj
 
+
+class Inv_Role(db.Model, RoleMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    
 class Inv_User(db.Model):
     __tablename__ = 'inv_user'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
@@ -92,6 +116,8 @@ class Inv_User(db.Model):
     country = db.Column(db.String(50), nullable=True)
     phone = db.Column(db.String(15), nullable=True)
     other_info = db.Column(JSON, nullable=True)
+    active = db.Column(db.Boolean())
+    roles = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
     created_on = db.Column(db.DateTime(), default=datetime.utcnow)
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
     inv_file = db.relationship('Inv_Fileupload', back_populates='inv_user', lazy='select')
@@ -517,3 +543,10 @@ class Inv_Fileupload(db.Model):
         db.session.commit()
         return bool(is_successful)
 
+
+
+
+
+# Add Views to Admin
+admin.add_view(ModelView(Inv_User, db.session))
+# admin.add_view(ModelView(Product, db.session))
