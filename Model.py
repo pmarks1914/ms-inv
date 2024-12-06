@@ -118,7 +118,7 @@ class Inv_User(db.Model):
     phone = db.Column(db.String(15), nullable=True)
     other_info = db.Column(JSON, nullable=True)
     active = db.Column(db.Boolean())
-    roles = db.relationship('Role', secondary=roles_users, backref=db.backref('inv_user', lazy='dynamic'))
+    # roles = db.relationship('Role', secondary=roles_users, backref=db.backref('inv_user', lazy='dynamic'))
     created_on = db.Column(db.DateTime(), default=datetime.utcnow)
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
     inv_file = db.relationship('Inv_Fileupload', back_populates='inv_user', lazy='select')
