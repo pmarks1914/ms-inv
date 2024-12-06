@@ -45,10 +45,10 @@ admin = Admin(app, name='Admin Dashboard', template_mode='bootstrap4')
 
 
 # Define Roles and Users
-roles_users = db.Table('roles_users',
-    db.Column('user_id', db.Integer, db.ForeignKey('inv_user.id')),
-    db.Column('role_id', db.Integer, db.ForeignKey('inv_role.id'))
-)
+# roles_users = db.Table('roles_users',
+#     db.Column('user_id', db.Integer, db.ForeignKey('inv_user.id')),
+#     db.Column('role_id', db.Integer, db.ForeignKey('inv_role.id'))
+# )
 
  
 list_account_status = ['PENDING', 'APPROVED', 'REJECTED']
