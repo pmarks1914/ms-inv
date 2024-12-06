@@ -97,10 +97,10 @@ def alchemy_to_json(obj, visited=None):
         return obj
 
 
-class Inv_Role(db.Model, RoleMixin):
-    __tablename__ = 'inv_role'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
+# class Inv_Role(db.Model, RoleMixin):
+#     __tablename__ = 'inv_role'
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(80), unique=True)
     
 class Inv_User(db.Model):
     __tablename__ = 'inv_user'
