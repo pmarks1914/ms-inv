@@ -46,8 +46,8 @@ admin = Admin(app, name='Admin Dashboard', template_mode='bootstrap4')
 
 # Define Roles and Users
 roles_users = db.Table('roles_users',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer, db.ForeignKey('role.id'))
+    db.Column('user_id', db.Integer, db.ForeignKey('inv_user.id')),
+    db.Column('role_id', db.Integer, db.ForeignKey('inv_role.id'))
 )
 
  
@@ -98,6 +98,7 @@ def alchemy_to_json(obj, visited=None):
 
 
 class Inv_Role(db.Model, RoleMixin):
+    __tablename__ = 'inv_role'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True)
     
@@ -117,7 +118,7 @@ class Inv_User(db.Model):
     phone = db.Column(db.String(15), nullable=True)
     other_info = db.Column(JSON, nullable=True)
     active = db.Column(db.Boolean())
-    roles = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
+    roles = db.relationship('Role', secondary=roles_users, backref=db.backref('inv_user', lazy='dynamic'))
     created_on = db.Column(db.DateTime(), default=datetime.utcnow)
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
     inv_file = db.relationship('Inv_Fileupload', back_populates='inv_user', lazy='select')
@@ -546,6 +547,9 @@ class Inv_Fileupload(db.Model):
 
 
 
+# Setup Flask-Security
+user_datastore = SQLAlchemyUserDatastore(db, Inv_User, Inv_Role)
+security = Security(app, user_datastore)
 
 # Add Views to Admin
 admin.add_view(ModelView(Inv_User, db.session))
