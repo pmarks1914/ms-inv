@@ -548,9 +548,9 @@ class Inv_Fileupload(db.Model):
 
 
 # Setup Flask-Security
-user_datastore = SQLAlchemyUserDatastore(db, Inv_User, Inv_Role)
-security = Security(app, user_datastore)
+# user_datastore = SQLAlchemyUserDatastore(db, Inv_User, Inv_Role)
+# security = Security(app, user_datastore)
 
 # Add Views to Admin
-admin.add_view(ModelView(Inv_User, db.session))
+# admin.add_view(ModelView(Inv_User, db.session))
 # admin.add_view(ModelView(Product, db.session))
