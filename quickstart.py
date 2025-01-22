@@ -1,7 +1,14 @@
 import os
 from openai import AzureOpenAI
 
+client = AzureOpenAI(
+  azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"), 
+  api_key=os.getenv("AZURE_OPENAI_API_KEY"),  
+  api_version=os.getenv("AZURE_OPENAI_VERSION")
+)
 
+
+model=os.getenv("AZURE_OPENAI_MODEL")
 
 response = client.chat.completions.create(
     model=model, # model = "deployment_name".
