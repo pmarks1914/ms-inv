@@ -168,7 +168,6 @@ class Inv_User(db.Model):
             return new_data_object
 
     def getAllUsers(page, per_page):        
-        # Determine the page and number of items per page from the request (if provided)
         # Query the database with pagination
         pagination = Inv_User.query.paginate(page=page, per_page=per_page, error_out=False)
         # Extract the items for the current page
