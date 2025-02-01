@@ -199,8 +199,6 @@ class Inv_User(db.Model):
 
     def getAllUsersByEmail(_email):
         joined_table_data = []
-        # user_data = db.session.query(Inv_User).filter_by(email=_email).join(Business).all()
-        # user_data = db.session.query(Inv_User, Business).filter_by(email=_email).join(Business).all()
         user_data = db.session.query(Inv_User).filter_by(email=_email).all()
 
         # get joined tables data .
